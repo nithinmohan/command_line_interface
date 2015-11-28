@@ -19,38 +19,40 @@ function isKey(event,keycode){
     return false; // special key
   }
 }
+function getAnswer(input){
+	return input+" bleh";
+}
+function addDiv(data){
+	var iDiv = document.createElement('div');
+    iDiv.innerHTML=data;
+	document.getElementById('prev_chat').appendChild(iDiv);
+}
 var app=angular.module('myApp',[]);
 app.directive('typingPoint', function() {
   return {
     restrict: 'AEC',
     replace: true,
-    template: '<div>{{name}}</div>',
+    template: '<div>{{input}}</div>',
     link: function(scope, elem, attrs) {
      document.body.onkeypress=function(e){
         scope.$apply(function() {
-          scope.name=scope.name?scope.name+getChar(e):getChar(e);
+          scope.input=scope.input?scope.input+getChar(e):getChar(e);
         });
       };
       document.body.onkeydown=function(e){
       	if(isKey(event,keyCodes.Backspace)){
      		scope.$apply(function() {
-          		scope.name=scope.name?scope.name.substr(0,scope.name.length-1):'';
+          		scope.input=scope.input?scope.input.substr(0,scope.input.length-1):'';
         	});
      	}
      	else if(isKey(event,keyCodes.Enter)){
-     		var iDiv = document.createElement('div');
-     		iDiv.innerHTML=scope.name;
-			document.getElementById('prev_chat').appendChild(iDiv);
+     		addDiv(scope.input);
+     		addDiv(getAnswer(scope.input));
      		scope.$apply(function() {
-          		scope.name='';
+          		scope.input='';
         	});
      	}
       }
     }
   };
 });
-
-var controller = app.controller("myController",function($scope){
-	
-  //updateClock();
-})
