@@ -32,7 +32,7 @@ app.directive('typingPoint', function() {
   return {
     restrict: 'AEC',
     replace: true,
-    template: '<div>{{input}}</div>',
+    template: '<div>you:{{input}}</div>',
     link: function(scope, elem, attrs) {
      document.body.onkeypress=function(e){
         scope.$apply(function() {
@@ -46,8 +46,8 @@ app.directive('typingPoint', function() {
         	});
      	}
      	else if(isKey(event,keyCodes.Enter)){
-     		addDiv(scope.input);
-     		addDiv(getAnswer(scope.input));
+     		addDiv("you           :"+scope.input);
+     		addDiv("me            :"+getAnswer(scope.input));
      		scope.$apply(function() {
           		scope.input='';
         	});
