@@ -69,6 +69,7 @@ app.directive('typingPoint', function() {
      		scope.$apply(function() {
           		scope.input=scope.input?scope.input.substr(0,scope.input.length-1):'';
         	});
+	      	e.preventDefault(); 
      	}
      	else if(isKey(event,keyCodes.Enter)){
      		addDiv("you           :"+scope.input);
@@ -82,6 +83,7 @@ app.directive('typingPoint', function() {
      		scope.$apply(function() {
           		scope.input='';
         	});
+	      	e.preventDefault(); 
      	}
       }
     }
