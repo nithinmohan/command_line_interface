@@ -83,6 +83,7 @@ app.directive('typingPoint', function() {
      		scope.$apply(function() {
           		scope.input='';
         	});
+        	window.scrollTo(0,document.body.scrollHeight);
 	      	e.preventDefault(); 
      	}
       }
