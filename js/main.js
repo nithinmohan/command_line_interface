@@ -7,12 +7,16 @@ function getChar(event) {
     return '' // special key
   }
 }
-var keyCodes={};
-keyCodes.Enter=13;
-keyCodes.Backspace=8;
+var keyCodes={
+	Enter:13,
+	Backspace:8,
+	UpArrow:38,
+	DownArrow:40,
+	};
 var data={
 	available_links:['link1','link2'],
 };
+var command_history=[];
 function isKey(event,keycode){
 	if (event.which == null) {
     return keycode==event.keyCode;// IE
@@ -25,6 +29,8 @@ function isKey(event,keycode){
 function _(data){
 	console.log(data);
 }
+var cur_history_index=0;
+var current_typing='';
 function getAnswer(input){
 	var init_data='',action;
 	if(input=='clear'){
@@ -72,6 +78,7 @@ app.directive('typingPoint', function() {
 	      	e.preventDefault(); 
      	}
      	else if(isKey(event,keyCodes.Enter)){
+     		current_typing='';
      		addDiv("you           :"+scope.input);
      		var answer=getAnswer(scope.input);
      		if(answer.action==false){
@@ -81,9 +88,36 @@ app.directive('typingPoint', function() {
      			document.getElementById('prev_chat').innerHTML="";
      		}
      		scope.$apply(function() {
+     			if(scope.input){ 
+     				command_history.push(scope.input);
+     				cur_history_index=command_history.length;
+     			}
           		scope.input='';
         	});
         	window.scrollTo(0,document.body.scrollHeight);
+	      	e.preventDefault(); 
+     	}
+     	else if(isKey(event,keyCodes.UpArrow)){
+     		if(cur_history_index==command_history.length){
+     			current_typing=scope.input;
+     		}
+     		scope.$apply(function() {
+     			if(cur_history_index>0){
+     		    	cur_history_index--;
+          			scope.input=command_history[cur_history_index];
+          		}
+        	});
+	      	e.preventDefault(); 
+     	}
+     	else if(isKey(event,keyCodes.DownArrow)){
+     		scope.$apply(function() {
+     			if(cur_history_index<command_history.length) cur_history_index++;
+     			else return;
+     			if(cur_history_index==command_history.length)
+     				scope.input=current_typing;
+     			else
+          			scope.input=command_history[cur_history_index];
+        	});
 	      	e.preventDefault(); 
      	}
       }
