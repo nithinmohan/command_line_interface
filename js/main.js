@@ -62,9 +62,18 @@ app.directive('typingPoint', function() {
   return {
     restrict: 'AEC',
     replace: true,
-    template: '<div>you :{{input}}</div>',
+    template: '<div>you :{{input}}{{cursor}}</div>',
     link: function(scope, elem, attrs) {
+    scope.cursor='_';
     scope.input='';
+    setInterval(function(){
+      scope.$apply(function(){
+        if(scope.cursor=='_')
+         scope.cursor='';
+        else
+          scope.cursor='_';
+        })
+    },500);
      document.body.onkeypress=function(e){
         scope.$apply(function() {
           scope.input=scope.input+getChar(e);
