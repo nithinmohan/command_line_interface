@@ -50,6 +50,8 @@ app.service('KeyboardService',function(){
     Backspace:8,
     UpArrow:38,
     DownArrow:40,
+    RightArrow:39,
+    LeftArrow:37,
   }
   this.isKey=function (event,keycode){
     if (event.which == null) {
@@ -79,77 +81,108 @@ app.directive('typingPoint', ['KeyboardService','AnswerService',function(Keyboar
   return {
     restrict: 'AEC',
     replace: true,
-    template: '<div>you :{{input}}{{cursor}}</div>',
+    template: '<div>you :{{input_splited()}}</div>',
     link: function(scope, elem, attrs) {
+      scope.input_splited=function(){return scope.input.substr(0,scope.cursor_position)+scope.cursor+scope.input.substr(scope.cursor_position,scope.input.length-scope.cursor_position);}
       var command_history=[];
       var cur_history_index=0;
       var current_typing='';
       scope.cursor='_';
       scope.input='';
+      scope.cursor_position=0;
       setInterval(function(){
         scope.$apply(function(){
-          if(scope.cursor=='_')
+          if(scope.cursor=='|')
            scope.cursor='';
           else
-            scope.cursor='_';
+            scope.cursor='|';
           })
       },500);
      document.body.onkeypress=function(e){
         scope.$apply(function() {
           scope.input=scope.input+KeyboardService.getChar(e);
+          scope.cursor_position++;
         });
       };
       document.body.onkeydown=function(e){
         if(KeyboardService.isKey(event,KeyboardService.keyCodes.Backspace)){
         scope.$apply(function() {
-              scope.input=scope.input?scope.input.substr(0,scope.input.length-1):'';
-          });
-          e.preventDefault(); 
-      }
-      else if(KeyboardService.isKey(event,KeyboardService.keyCodes.Enter)){
-        current_typing='';
-        var input=scope.input;
-        scope.$apply(function() {
-          if(scope.input){ 
-            command_history.push(scope.input);
-            cur_history_index=command_history.length;
-          }
-              scope.input='';
-          });
-        addDiv("you           :"+input);
-        if(input=='clear'){
-          document.getElementById('prev_chat').innerHTML="";
-        }
-        else{
-          var answer=AnswerService.getAnswer(input);
-          addDiv("me            :"+answer);
-        }
-          window.scrollTo(0,document.body.scrollHeight);
-          e.preventDefault(); 
-      }
-      else if(KeyboardService.isKey(event,KeyboardService.keyCodes.UpArrow)){
-        if(cur_history_index==command_history.length){
-          current_typing=scope.input;
-        }
-        scope.$apply(function() {
-          if(cur_history_index>0){
-              cur_history_index--;
-                scope.input=command_history[cur_history_index];
+              var p1=scope.input.substr(0,scope.cursor_position);
+              var p2=scope.input.substr(scope.cursor_position,scope.input.length-scope.cursor_position);
+              if(p1){
+                scope.input=p1.substr(0,p1.length-1)+p2;
+                scope.cursor_position--;
               }
+              else{
+                scope.input=p1+p2;
+              }
+
           });
           e.preventDefault(); 
-      }
-      else if(KeyboardService.isKey(event,KeyboardService.keyCodes.DownArrow)){
-        scope.$apply(function() {
-          if(cur_history_index<command_history.length) cur_history_index++;
-          else return;
-          if(cur_history_index==command_history.length)
-            scope.input=current_typing;
-          else
-                scope.input=command_history[cur_history_index];
+        }
+        else if(KeyboardService.isKey(event,KeyboardService.keyCodes.Backspace)){
+          scope.$apply(function() {
+                scope.input=scope.input?scope.input.substr(0,scope.input.length-1):'';
+            });
+            e.preventDefault(); 
+        }
+        else if(KeyboardService.isKey(event,KeyboardService.keyCodes.Enter)){
+          current_typing='';
+          var input=scope.input;
+          scope.$apply(function() {
+            if(scope.input){ 
+              command_history.push(scope.input);
+              cur_history_index=command_history.length;
+            }
+                scope.input='';
+            });
+          addDiv("you           :"+input);
+          if(input=='clear'){
+            document.getElementById('prev_chat').innerHTML="";
+          }
+          else{
+            var answer=AnswerService.getAnswer(input);
+            addDiv("me            :"+answer);
+          }
+            window.scrollTo(0,document.body.scrollHeight);
+            e.preventDefault(); 
+        }
+        else if(KeyboardService.isKey(event,KeyboardService.keyCodes.UpArrow)){
+          if(cur_history_index==command_history.length){
+            current_typing=scope.input;
+          }
+          scope.$apply(function() {
+            if(cur_history_index>0){
+                cur_history_index--;
+                  scope.input=command_history[cur_history_index];
+                }
+            });
+            e.preventDefault(); 
+        }
+        else if(KeyboardService.isKey(event,KeyboardService.keyCodes.DownArrow)){
+          scope.$apply(function() {
+            if(cur_history_index<command_history.length) cur_history_index++;
+            else return;
+            if(cur_history_index==command_history.length)
+              scope.input=current_typing;
+            else
+                  scope.input=command_history[cur_history_index];
+            });
+        }
+        else if(KeyboardService.isKey(event,KeyboardService.keyCodes.RightArrow)){
+          scope.$apply(function() {
+            if(scope.cursor_position<scope.input.length)
+            scope.cursor_position++;
+          });
+            e.preventDefault(); 
+        }
+        else if(KeyboardService.isKey(event,KeyboardService.keyCodes.LeftArrow)){
+          scope.$apply(function() {
+            if(scope.cursor_position>0)
+            scope.cursor_position--;
           });
           e.preventDefault(); 
-      }
+        }
       }
     }
   };
