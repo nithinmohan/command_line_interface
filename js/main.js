@@ -31,26 +31,28 @@ function _(data){
 }
 var cur_history_index=0;
 var current_typing='';
-function getAnswer(input){
-	var init_data='',action;
-	if(input=='clear'){
-		action='clear';
-	}
-	else if(input=='av_links'){
-		action=false;
+var user_rules={
+	'time':function(){
+		return "12:30"
+	},
+	'add':function(num1,num2){
+		return num1+num2;
+	},
+	'av_links':function(){
+		var init_data='';
 		for(var c in data.available_links){
 			init_data=init_data+'<a href="'+data.available_links[c]+'">'+data.available_links[c]+'</a><br>'
 		}
-		output=init_data;
+		return init_data;
 	}
-	else{
-		output='unknown command';
-		action=false;
-	}
-	return {
-			action:action,
-			output:output
-		}
+}
+function getAnswer(input){
+	var init_data='',action;
+	if(user_rules[input]==undefined)
+		output='unknown_command';
+	else
+	output=user_rules[input]();
+	return output;
 }
 function addDiv(data){
 	var iDiv = document.createElement('div');
@@ -79,14 +81,7 @@ app.directive('typingPoint', function() {
      	}
      	else if(isKey(event,keyCodes.Enter)){
      		current_typing='';
-     		addDiv("you           :"+scope.input);
-     		var answer=getAnswer(scope.input);
-     		if(answer.action==false){
-     			addDiv("me            :"+answer.output);
-     		}
-     		else if(answer.action=='clear'){
-     			document.getElementById('prev_chat').innerHTML="";
-     		}
+     		var input=scope.input;
      		scope.$apply(function() {
      			if(scope.input){ 
      				command_history.push(scope.input);
@@ -94,6 +89,14 @@ app.directive('typingPoint', function() {
      			}
           		scope.input='';
         	});
+     		addDiv("you           :"+input);
+     		if(input=='clear'){
+     			document.getElementById('prev_chat').innerHTML="";
+     		}
+     		else{
+	     		var answer=getAnswer(input);
+	     		addDiv("me            :"+answer);
+	     	}
         	window.scrollTo(0,document.body.scrollHeight);
 	      	e.preventDefault(); 
      	}
