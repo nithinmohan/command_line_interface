@@ -1,7 +1,12 @@
 function _(data){
   console.log(data);
 }
-
+String.prototype.cut_in=function(cut_point){
+  return {
+    first:this.substr(0,cut_point),
+    second:this.substr(cut_point,this.length-cut_point)
+  }
+}
 var app=angular.module('myApp',[]);
 app.value('OfflineData',{
   available_links:['link1','link2'],
@@ -83,13 +88,15 @@ app.directive('typingPoint', ['KeyboardService','AnswerService',function(Keyboar
     replace: true,
     template: '<div>you :{{input_splited()}}</div>',
     link: function(scope, elem, attrs) {
-      scope.input_splited=function(){return scope.input.substr(0,scope.cursor_position)+scope.cursor+scope.input.substr(scope.cursor_position,scope.input.length-scope.cursor_position);}
       var command_history=[];
       var cur_history_index=0;
       var current_typing='';
-      scope.cursor='_';
+      scope.cursor='|';
+      var cursor_position=0;
       scope.input='';
-      scope.cursor_position=0;
+      scope.input_splited=function(){
+        return scope.input.cut_in(cursor_position).first+scope.cursor+scope.input.cut_in(cursor_position).second;
+      }
       setInterval(function(){
         scope.$apply(function(){
           if(scope.cursor=='|')
@@ -101,30 +108,23 @@ app.directive('typingPoint', ['KeyboardService','AnswerService',function(Keyboar
      document.body.onkeypress=function(e){
         scope.$apply(function() {
           scope.input=scope.input+KeyboardService.getChar(e);
-          scope.cursor_position++;
+          cursor_position++;
         });
       };
       document.body.onkeydown=function(e){
         if(KeyboardService.isKey(event,KeyboardService.keyCodes.Backspace)){
-        scope.$apply(function() {
-              var p1=scope.input.substr(0,scope.cursor_position);
-              var p2=scope.input.substr(scope.cursor_position,scope.input.length-scope.cursor_position);
-              if(p1){
-                scope.input=p1.substr(0,p1.length-1)+p2;
-                scope.cursor_position--;
-              }
-              else{
-                scope.input=p1+p2;
-              }
-
+          scope.$apply(function() {
+            var p1=scope.input.cut_in(cursor_position).first;
+            var p2=scope.input.cut_in(cursor_position).second;
+            if(p1){
+              scope.input=p1.cut_in(p1.length-1).first+p2;
+              cursor_position--;
+            }
+            else{
+              scope.input=p1+p2;
+            }
           });
           e.preventDefault(); 
-        }
-        else if(KeyboardService.isKey(event,KeyboardService.keyCodes.Backspace)){
-          scope.$apply(function() {
-                scope.input=scope.input?scope.input.substr(0,scope.input.length-1):'';
-            });
-            e.preventDefault(); 
         }
         else if(KeyboardService.isKey(event,KeyboardService.keyCodes.Enter)){
           current_typing='';
@@ -171,15 +171,15 @@ app.directive('typingPoint', ['KeyboardService','AnswerService',function(Keyboar
         }
         else if(KeyboardService.isKey(event,KeyboardService.keyCodes.RightArrow)){
           scope.$apply(function() {
-            if(scope.cursor_position<scope.input.length)
-            scope.cursor_position++;
+            if(cursor_position<scope.input.length)
+            cursor_position++;
           });
             e.preventDefault(); 
         }
         else if(KeyboardService.isKey(event,KeyboardService.keyCodes.LeftArrow)){
           scope.$apply(function() {
-            if(scope.cursor_position>0)
-            scope.cursor_position--;
+            if(cursor_position>0)
+            cursor_position--;
           });
           e.preventDefault(); 
         }
