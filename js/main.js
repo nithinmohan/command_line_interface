@@ -35,8 +35,8 @@ var user_rules={
 	'time':function(){
 		return "12:30"
 	},
-	'add':function(num1,num2){
-		return num1+num2;
+	'add':function(arguments){
+		return arguments[0]+arguments[1];
 	},
 	'av_links':function(){
 		var init_data='';
@@ -44,14 +44,26 @@ var user_rules={
 			init_data=init_data+'<a href="'+data.available_links[c]+'">'+data.available_links[c]+'</a><br>'
 		}
 		return init_data;
-	}
+	},
+	'get_joke':function(){
+		var request = new XMLHttpRequest();
+		request.open('GET', 'http://api.icndb.com/jokes/random', false);  // `false` makes the request synchronous
+		request.send(null);
+		if (request.status === 200) {
+  			return JSON.parse(request.responseText)["value"]["joke"];
+		}
+		
+	},
 }
 function getAnswer(input){
 	var init_data='',action;
-	if(user_rules[input]==undefined)
+	var splitted_input=input.split(" ");
+	var command=splitted_input[0];
+	var arguments=splitted_input.splice(1, splitted_input.length-1);
+	if(user_rules[command]==undefined)
 		output='unknown_command';
 	else
-	output=user_rules[input]();
+	output=user_rules[command](arguments);
 	return output;
 }
 function addDiv(data){
