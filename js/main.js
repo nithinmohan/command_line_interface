@@ -79,13 +79,22 @@ app.directive('typingPoint', ['KeyboardService','AnswerService',function(Keyboar
   return {
     restrict: 'AEC',
     replace: true,
-    template: '<div>you :{{input}}</div>',
+    template: '<div>you :{{input}}{{cursor}}</div>',
     link: function(scope, elem, attrs) {
       var command_history=[];
       var cur_history_index=0;
       var current_typing='';
+      scope.cursor='_';
       scope.input='';
-      document.body.onkeypress=function(e){
+      setInterval(function(){
+        scope.$apply(function(){
+          if(scope.cursor=='_')
+           scope.cursor='';
+          else
+            scope.cursor='_';
+          })
+      },500);
+     document.body.onkeypress=function(e){
         scope.$apply(function() {
           scope.input=scope.input+KeyboardService.getChar(e);
         });
