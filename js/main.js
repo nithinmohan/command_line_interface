@@ -13,11 +13,21 @@ app.value('OfflineData',{
 });
 app.service('UserService',['OfflineData',function(data){
   this.user_rules={
+    'date':function(){
+
+      var currentdate = new Date(); 
+      return currentdate.getDate() + "/"
+                + (currentdate.getMonth()+1)  + "/" 
+                + currentdate.getFullYear()
+    },
     'time':function(){
-      return "12:30"
+      var currentdate = new Date(); 
+                return currentdate.getHours() + ":"  
+                + currentdate.getMinutes() + ":" 
+                + currentdate.getSeconds();
     },
     'add':function(arguments){
-      return arguments[0]+arguments[1];
+      return parseInt(arguments[0])+parseInt(arguments[1]);
     },
     'av_links':function(){
       var init_data='';
