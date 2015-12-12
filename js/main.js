@@ -57,6 +57,7 @@ app.service('KeyboardService',function(){
     DownArrow:40,
     RightArrow:39,
     LeftArrow:37,
+    Delete:46,
   }
   this.isKey=function (event,keycode){
     if (event.which == null) {
@@ -119,6 +120,19 @@ app.directive('typingPoint', ['KeyboardService','AnswerService',function(Keyboar
             if(p1){
               scope.input=p1.cut_in(p1.length-1).first+p2;
               cursor_position--;
+            }
+            else{
+              scope.input=p1+p2;
+            }
+          });
+          e.preventDefault(); 
+        }
+        else if(KeyboardService.isKey(event,KeyboardService.keyCodes.Delete)){
+          scope.$apply(function() {
+            var p1=scope.input.cut_in(cursor_position).first;
+            var p2=scope.input.cut_in(cursor_position).second;
+            if(p1){
+              scope.input=p1+p2.cut_in(1).second;
             }
             else{
               scope.input=p1+p2;
