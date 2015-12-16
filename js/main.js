@@ -7,12 +7,19 @@ String.prototype.cut_in=function(cut_point){
     second:this.substr(cut_point,this.length-cut_point)
   }
 }
+Array.prototype.combine=function(index1,index2){
+  var ans=this[index1];
+  for(var i=index1+1;i<=index2;i++){
+    ans=ans+" "+this[i];
+  }
+  return ans;
+}
 var app=angular.module('myApp',[]);
 app.value('OfflineData',{
   available_links:['link1','link2'],
 });
 app.service('UserService',['OfflineData',function(data){
-  this.user_rules={
+  var user_rules={
     'date':function(){
 
       var currentdate = new Date(); 
@@ -44,19 +51,28 @@ app.service('UserService',['OfflineData',function(data){
           return JSON.parse(request.responseText)["value"]["joke"];
       } 
     },
+    'add_function':function(arguments){
+      this.addUserFunction(arguments[0],arguments.combine(1,arguments.length-1));
+      console.log(user_rules);
+      return "added";
+    }
+  }
+  this.callUserFunction=function(function_name,arguments){
+    var function_body=user_rules[function_name];
+    if(function_body==undefined)
+      return 'unknown_command';
+    return function_body.call(this,arguments);
+  }
+  this.addUserFunction=function(function_name,function_body){
+    user_rules[function_name]=new Function(function_body);
   }
 }])
 app.service('AnswerService',['UserService',function(UserService){
   this.getAnswer=function(input){
-    var init_data='',action;
     var splitted_input=input.split(" ");
     var command=splitted_input[0];
     var arguments=splitted_input.splice(1, splitted_input.length-1);
-    if(UserService.user_rules[command]==undefined)
-      output='unknown_command';
-    else
-    output=UserService.user_rules[command](arguments);
-    return output;
+    return UserService.callUserFunction(command,arguments)
   }
 }])
 app.service('KeyboardService',function(){
@@ -97,14 +113,14 @@ app.directive('typingPoint', ['KeyboardService','AnswerService',function(Keyboar
   return {
     restrict: 'AEC',
     replace: true,
-    template: '<div>you :{{input_splited()}}</div>',
+    template: '<div>you :<input ng-model=input></div>',
     link: function(scope, elem, attrs) {
       var command_history=[];
       var cur_history_index=0;
       var current_typing='';
       scope.cursor='|';
       var cursor_position=0;
-      scope.input='';
+      scope.input='add_function b return 1;';
       scope.input_splited=function(){
         return scope.input.cut_in(cursor_position).first+scope.cursor+scope.input.cut_in(cursor_position).second;
       }
