@@ -72,7 +72,13 @@ app.service('AnswerService',['UserService',function(UserService){
     var splitted_input=input.split(" ");
     var command=splitted_input[0];
     var arguments=splitted_input.splice(1, splitted_input.length-1);
-    return UserService.callUserFunction(command,arguments)
+    try{
+      var ret_val= UserService.callUserFunction(command,arguments);
+      return ret_val;
+    }
+    catch(e){
+      return e.name+" "+e.message;
+    }
   }
 }])
 app.service('KeyboardService',function(){
