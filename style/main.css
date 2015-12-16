@@ -1,4 +1,5 @@
-body{
+body,input{
 	background-color:black;
 	color:#00CC00;
+	border-color:black;
 }

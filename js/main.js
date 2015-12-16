@@ -97,60 +97,17 @@ app.directive('typingPoint', ['KeyboardService','AnswerService',function(Keyboar
   return {
     restrict: 'AEC',
     replace: true,
-    template: '<div>you :{{input_splited()}}</div>',
+    template: '<div>you :<input id="main_input" autofocus ng-model=input></div>',
     link: function(scope, elem, attrs) {
       var command_history=[];
       var cur_history_index=0;
       var current_typing='';
-      scope.cursor='|';
-      var cursor_position=0;
       scope.input='';
       scope.input_splited=function(){
         return scope.input.cut_in(cursor_position).first+scope.cursor+scope.input.cut_in(cursor_position).second;
       }
-      setInterval(function(){
-        scope.$apply(function(){
-          if(scope.cursor=='|')
-           scope.cursor='';
-          else
-            scope.cursor='|';
-          })
-      },500);
-     document.body.onkeypress=function(e){
-        scope.$apply(function() {
-          scope.input=scope.input+KeyboardService.getChar(e);
-          cursor_position++;
-        });
-      };
       document.body.onkeydown=function(e){
-        if(KeyboardService.isKey(event,KeyboardService.keyCodes.Backspace)){
-          scope.$apply(function() {
-            var p1=scope.input.cut_in(cursor_position).first;
-            var p2=scope.input.cut_in(cursor_position).second;
-            if(p1){
-              scope.input=p1.cut_in(p1.length-1).first+p2;
-              cursor_position--;
-            }
-            else{
-              scope.input=p1+p2;
-            }
-          });
-          e.preventDefault(); 
-        }
-        else if(KeyboardService.isKey(event,KeyboardService.keyCodes.Delete)){
-          scope.$apply(function() {
-            var p1=scope.input.cut_in(cursor_position).first;
-            var p2=scope.input.cut_in(cursor_position).second;
-            if(p1){
-              scope.input=p1+p2.cut_in(1).second;
-            }
-            else{
-              scope.input=p1+p2;
-            }
-          });
-          e.preventDefault(); 
-        }
-        else if(KeyboardService.isKey(event,KeyboardService.keyCodes.Enter)){
+        if(KeyboardService.isKey(event,KeyboardService.keyCodes.Enter)){
           current_typing='';
           var input=scope.input;
           scope.$apply(function() {
@@ -192,20 +149,6 @@ app.directive('typingPoint', ['KeyboardService','AnswerService',function(Keyboar
             else
                   scope.input=command_history[cur_history_index];
             });
-        }
-        else if(KeyboardService.isKey(event,KeyboardService.keyCodes.RightArrow)){
-          scope.$apply(function() {
-            if(cursor_position<scope.input.length)
-            cursor_position++;
-          });
-            e.preventDefault(); 
-        }
-        else if(KeyboardService.isKey(event,KeyboardService.keyCodes.LeftArrow)){
-          scope.$apply(function() {
-            if(cursor_position>0)
-            cursor_position--;
-          });
-          e.preventDefault(); 
         }
       }
     }
