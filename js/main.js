@@ -82,7 +82,7 @@ app.service('AnswerService',['UserService',function(UserService){
 }])
 app.service('CodeEditorService',[function(){
   this.CodeMirror = CodeMirror(document.getElementById("code_editor"), {
-    value: "function myScript(){return 100;}\n",
+    value: "//add content inside function(){...}\n",
     mode:  "javascript"
   });
   var show=true;
@@ -91,6 +91,9 @@ app.service('CodeEditorService',[function(){
   }
   this.get_show=function(){
     return show;
+  }
+  this.getCode=function(){
+    return this.CodeMirror.getValue("");
   }
 }])
 app.service('KeyboardService',function(){
@@ -122,6 +125,9 @@ app.service('KeyboardService',function(){
     }
   }
 })
+app.service('HistoryService',function(){
+
+})
 app.directive('typingPoint', ['KeyboardService','AnswerService','CodeEditorService','$timeout',function(KeyboardService,AnswerService,CodeEditorService,$timeout) {
   function addDiv(data){
     var iDiv = document.createElement('div');
@@ -137,27 +143,38 @@ app.directive('typingPoint', ['KeyboardService','AnswerService','CodeEditorServi
       var cur_history_index=0;
       var current_typing='';
       scope.input='';
+      var enter_handler=function(data){
+        if(!data)
+          data="";
+        current_typing='';
+        var input=scope.input;
+        if(scope.input){ 
+          command_history.push(scope.input);
+          cur_history_index=command_history.length;
+        }
+        scope.input='';
+        addDiv("you           :"+input);
+        if(input=='clear'){
+          document.getElementById('prev_chat').innerHTML="";
+        }
+        else{
+          var answer=AnswerService.getAnswer(input+data);
+          addDiv("me            :"+answer);
+        }
+        window.scrollTo(0,document.body.scrollHeight);
+        try{
+          e.preventDefault(); 
+        }
+        catch(v){
+        }
+      }
+      scope.$on('keypress:13',function(event, args){
+        _("asd");
+        enter_handler(args.code);
+      });
       elem.bind('keydown',function(e){
         if(KeyboardService.isKey(e,KeyboardService.keyCodes.Enter)){
-          current_typing='';
-          var input=scope.input;
-          scope.$apply(function() {
-            if(scope.input){ 
-              command_history.push(scope.input);
-              cur_history_index=command_history.length;
-            }
-                scope.input='';
-            });
-          addDiv("you           :"+input);
-          if(input=='clear'){
-            document.getElementById('prev_chat').innerHTML="";
-          }
-          else{
-            var answer=AnswerService.getAnswer(input);
-            addDiv("me            :"+answer);
-          }
-            window.scrollTo(0,document.body.scrollHeight);
-            e.preventDefault(); 
+          scope.$apply(enter_handler());
         }
         else if(KeyboardService.isKey(event,KeyboardService.keyCodes.UpArrow)){
           if(cur_history_index==command_history.length){
@@ -183,11 +200,12 @@ app.directive('typingPoint', ['KeyboardService','AnswerService','CodeEditorServi
         }
       })
     },
-    controller:function($scope,$rootScope){
+    controller:function($scope,$rootScope,$element){
       $scope.$watch('input', function() {
-        if(/a\s+(\S)+\s/.test($scope.input)){
+        if(/add_function\s+(\S)+\s/.test($scope.input)){
           CodeEditorService.set_show(true);
           $timeout(function() {CodeEditorService.CodeMirror.focus();}, 10);
+          $element[0].querySelector("#main_input").disabled=true;
         }
         else{
           CodeEditorService.set_show(false);
@@ -196,6 +214,16 @@ app.directive('typingPoint', ['KeyboardService','AnswerService','CodeEditorServi
     }
   };
 }]);
-app.controller('EditorController',['$scope','CodeEditorService',function($scope,CodeEditorService){
+app.controller('EditorController',['$scope','$rootScope','CodeEditorService',function($scope,$rootScope,CodeEditorService){
     $scope.get_show=CodeEditorService.get_show;
+    $scope.add=function(){
+      $rootScope.$broadcast('keypress:13', {code:CodeEditorService.getCode()});
+      document.getElementById("main_input").disabled=false;
+      document.getElementById("main_input").focus();
+    } 
+    $scope.cancel=function(){
+      document.getElementById("main_input").disabled=false;
+      document.getElementById("main_input").focus();
+      $rootScope.input=$rootScope.input.cut_in($rootScope.input.length-1).first;
+    }   
 }])

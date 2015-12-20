@@ -10,8 +10,9 @@
 <body>
 	<div id='prev_chat'></div>
 	<typing-point></typing-point>
-	<div ng-controller="EditorController" >
-	<div id="code_editor" ng-show="get_show()"></div>
+	<div id="code_editor" ng-show="get_show()" ng-controller="EditorController" >
+		<button ng-click="add()">add</button>
+		<button ng-click="cancel()">cancel</button>
 	</div>
 </body>
 <script>
