@@ -53,7 +53,6 @@ app.service('UserService',['OfflineData',function(data){
     },
     'add_function':function(arguments){
       this.addUserFunction(arguments[0],arguments.combine(1,arguments.length-1));
-      console.log(user_rules);
       return "added";
     }
   }
@@ -79,6 +78,19 @@ app.service('AnswerService',['UserService',function(UserService){
     catch(e){
       return e.name+" "+e.message;
     }
+  }
+}])
+app.service('CodeEditorService',[function(){
+  this.CodeMirror = CodeMirror(document.getElementById("code_editor"), {
+    value: "function myScript(){return 100;}\n",
+    mode:  "javascript"
+  });
+  var show=true;
+  this.set_show=function(status){
+    show=status;
+  }
+  this.get_show=function(){
+    return show;
   }
 }])
 app.service('KeyboardService',function(){
@@ -110,7 +122,7 @@ app.service('KeyboardService',function(){
     }
   }
 })
-app.directive('typingPoint', ['KeyboardService','AnswerService',function(KeyboardService,AnswerService,OfflineData) {
+app.directive('typingPoint', ['KeyboardService','AnswerService','CodeEditorService','$timeout',function(KeyboardService,AnswerService,CodeEditorService,$timeout) {
   function addDiv(data){
     var iDiv = document.createElement('div');
     iDiv.innerHTML=data;
@@ -119,17 +131,14 @@ app.directive('typingPoint', ['KeyboardService','AnswerService',function(Keyboar
   return {
     restrict: 'AEC',
     replace: true,
-    template: '<div>you :<input id="main_input" autofocus ng-model=input></div>',
+    template: '<div>you :<input id="main_input" autofocus ng-model=input ng-trim="false"></div>',
     link: function(scope, elem, attrs) {
       var command_history=[];
       var cur_history_index=0;
       var current_typing='';
       scope.input='';
-      scope.input_splited=function(){
-        return scope.input.cut_in(cursor_position).first+scope.cursor+scope.input.cut_in(cursor_position).second;
-      }
-      document.body.onkeydown=function(e){
-        if(KeyboardService.isKey(event,KeyboardService.keyCodes.Enter)){
+      elem.bind('keydown',function(e){
+        if(KeyboardService.isKey(e,KeyboardService.keyCodes.Enter)){
           current_typing='';
           var input=scope.input;
           scope.$apply(function() {
@@ -172,7 +181,21 @@ app.directive('typingPoint', ['KeyboardService','AnswerService',function(Keyboar
                   scope.input=command_history[cur_history_index];
             });
         }
-      }
+      })
+    },
+    controller:function($scope,$rootScope){
+      $scope.$watch('input', function() {
+        if(/a\s+(\S)+\s/.test($scope.input)){
+          CodeEditorService.set_show(true);
+          $timeout(function() {CodeEditorService.CodeMirror.focus();}, 10);
+        }
+        else{
+          CodeEditorService.set_show(false);
+        }
+      });
     }
   };
 }]);
+app.controller('EditorController',['$scope','CodeEditorService',function($scope,CodeEditorService){
+    $scope.get_show=CodeEditorService.get_show;
+}])
