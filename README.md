@@ -20,3 +20,9 @@ concat hello world
 * Arguments supplied by user will be given to the inbuilt editor as args array.
 * Function already defined cannot be called inside another one(not yet).
 * To get previously typed commands use arrow keys.
+
+TODO:
+
+- User login
+- Online save for future use
+- Function sharing
