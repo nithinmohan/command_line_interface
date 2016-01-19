@@ -15,6 +15,7 @@ Array.prototype.combine=function(index1,index2){
   return ans;
 }
 var app=angular.module('myApp',['Services']);
+
 app.value('OfflineData',{
   available_links:['link1','link2'],
 });
@@ -123,4 +124,22 @@ app.controller('EditorController',['$scope','$rootScope','CodeEditorService',fun
       document.getElementById("main_input").disabled=false;
       document.getElementById("main_input").focus();
     }   
+}])
+app.controller('LoginController',['$http','TokenFactory',function($http,TokenFactory){
+  this.log_in=function(uname,pword){
+    $http({
+      method: 'POST',
+      data: {
+        username:this.username,
+        password:this.password
+      },
+      url: 'http://localhost:8888/authenticate'
+    }).then(function successCallback(response) {
+        TokenFactory.set(response.data.token);
+        console.log(response);
+      }, function errorCallback(response) {
+        // called asynchronously if an error occurs
+        
+      })
+  }
 }])

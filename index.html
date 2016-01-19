@@ -9,6 +9,11 @@
 	<script src="https://cdn.jsdelivr.net/codemirror/4.5.0/codemirror.min.js"></script>
 </head>
 <body>
+	<div id="login_box" ng-controller="LoginController as logc">
+		<input ng-model="logc.username">
+		<input ng-model="logc.password">
+		<button ng-click="logc.log_in()">log in</button>
+	</div>
 	<div id='prev_chat'></div>
 	<typing-point></typing-point>
 	<div id="code_editor" ng-show="get_show()" ng-controller="EditorController" >

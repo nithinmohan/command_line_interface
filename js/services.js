@@ -1,10 +1,9 @@
 var Services=angular.module('Services',[])
-Services.service('UserService',['OfflineData',function(data){
+Services.service('UserService',['OfflineData','TokenFactory',function(data,TokenFactory){
   //functions that can be called by user
   var user_rules={
     'date':{
       body:function(){
-
         var currentdate = new Date(); 
         return currentdate.getDate() + "/"
                   + (currentdate.getMonth()+1)  + "/" 
@@ -36,11 +35,30 @@ Services.service('UserService',['OfflineData',function(data){
     'get_joke':{
       body:function(){
         var request = new XMLHttpRequest();
-        request.open('GET', 'http://api.icndb.com/jokes/random', false);  // `false` makes the request synchronous
+        request.open('POST', 'http://api.icndb.com/jokes/random', false);  // `false` makes the request synchronous
         request.send(null);
         if (request.status === 200) {
             return JSON.parse(request.responseText)["value"]["joke"];
         } 
+      }
+    },
+    'get':{
+      body:function(){
+        var request = new XMLHttpRequest();
+        request.open('POST', 'http://localhost:8888/api/restricted', false);  // `false` makes the request synchronous
+        request.setRequestHeader("authorization", "Bearer "+TokenFactory.get());
+        request.send(null);
+        if (request.status === 200) {
+            return JSON.parse(request.responseText);
+        } 
+      }
+    },
+    'username':{
+      body:function(){
+        var profile=TokenFactory.get_decoded();
+        if(profile==false)
+          return "get yourself a name first";
+        return "The name is "+profile.last_name+". "+profile.first_name+" "+profile.last_name+".";
       }
     },
     //adds new function to the list
@@ -136,6 +154,24 @@ Services.service('KeyboardService',function(){
     }
   }
 })
-Services.service('HistoryService',function(){
-
-})
+Services.factory('TokenFactory',['$window',function($window){
+  var value="";
+  return {
+    get:function(){
+      return value;
+    },
+    set:function(val){
+      value=val
+    },
+    reset:function(){
+      value="";
+    },
+    get_decoded:function(){
+      if(value==="")
+        return false;
+      var base64Url = value.split('.')[1];
+      var base64 = base64Url.replace('-', '+').replace('_', '/');
+      return JSON.parse($window.atob(base64));
+    }
+  }
+}])
